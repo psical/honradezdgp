@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Juego Completo: Honradez + Sopa de Letras</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom right, #e0f7fa, #d1e7dd);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+
+    .seccion {
+      width: 100%;
+      max-width: 600px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .tiempo {
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #2980b9;
+      margin-bottom: 15px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+
+    .mensaje {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .correcto {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .incorrecto {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+    }
+
+    li.correcta {
+      background-color: #28a745;
+      color: white;
+      padding: 5px 10px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+    }
+
+    li.incorrecta {
+      background-color: #dc3545;
+      color: white;
+      padding: 5px 10px;
+      margin-bottom: 5px;
+      border-radius: 4px;
+    }
+
+    .reiniciar {
+      margin-top: 20px;
+      width: 100%;
+      padding: 10px;
+      background-color: #2980b9;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    /* Sopa de letras */
+    .sopa {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 2px;
+      margin-top: 10px;
+      max-width: 600px;
+    }
+
+    .cel {
+      width: 30px;
+      height: 30px;
+      text-align: center;
+      line-height: 30px;
+      font-weight: bold;
+      background: #fff;
+      border: 1px solid #ddd;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .cel.seleccionada {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .palabras-encontradas {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- JUEGO DE PALABRAS -->
+  <div class="seccion">
+    <h1>Adivina las Palabras de la Honradez</h1>
+    <p>Tienes 5 intentos y 2 minutos para adivinar las 5 palabras.</p>
+    <div class="tiempo" id="tiempo">Tiempo restante: 02:00</div>
+
+    <form id="formulario">
+      <input type="text" id="entrada" placeholder="Escribe tu palabra..." autocomplete="off" />
+      <button type="submit">Enviar</button>
+    </form>
+
+    <div id="mensaje" class="mensaje" style="display: none;"></div>
+
+    <h2>Tus intentos:</h2>
+    <ul id="historial"></ul>
+
+    <div id="puntaje" class="mensaje correcto" style="display: none;"></div>
+  </div>
+
+  <!-- SOPA DE LETRAS -->
+  <div class="seccion">
+    <h2>Sopa de Letras</h2>
+    <p>Encuentra estas 8 palabras:</p>
+    <ul>
+      <li>Gestion</li>
+      <li>Nominas</li>
+      <li>Administrativo</li>
+      <li>Puestos</li>
+      <li>Bienestar</li>
+      <li>Legal</li>
+      <li>Dotación</li>
+      <li>Formación</li>
+    </ul>
+
+    <div class="sopa" id="sopa"></div>
+    <div class="palabras-encontradas" id="encontradas">Palabras encontradas: 0/8</div>
+  </div>
+
+  <button id="reiniciar" class="reiniciar" style="display: none;">Reiniciar Juego</button>
+
+  <script>
+    // === CONFIGURACIÓN DEL JUEGO DE PALABRAS ===
+    const palabrasCorrectas = ["integridad", "sinceridad", "veracidad", "rectitud", "honestidad"];
+    let palabrasAdivinadas = [];
+    let intentosRealizados = [];
+    const maxIntentos = 5;
+
+    const entrada = document.getElementById("entrada");
+    const formulario = document.getElementById("formulario");
+    const historial = document.getElementById("historial");
+    const mensaje = document.getElementById("mensaje");
+    const puntajeDiv = document.getElementById("puntaje");
+    const reiniciarBtn = document.getElementById("reiniciar");
+    const tiempoDiv = document.getElementById("tiempo");
+
+    let segundosRestantes = 120;
+    let temporizador;
+
+    function iniciarTemporizador() {
+      clearInterval(temporizador);
+      segundosRestantes = 120;
+      tiempoDiv.textContent = `Tiempo restante: 02:00`;
+      temporizador = setInterval(() => {
+        segundosRestantes--;
+        const minutos = Math.floor(segundosRestantes / 60);
+        const segundos = segundosRestantes % 60;
+        tiempoDiv.textContent = `Tiempo restante: ${minutos}:${segundos.toString().padStart(2, "0")}`;
+        if (segundosRestantes <= 0) {
+          clearInterval(temporizador);
+          entrada.disabled = true;
+          reiniciarBtn.style.display = "block";
+          mostrarPuntajeFinal();
+          mostrarMensaje("⏰ ¡Se acabó el tiempo!", "incorrecto");
+        }
+      }, 1000);
+    }
+
+    function actualizarHistorial() {
+      historial.innerHTML = "";
+      intentosRealizados.forEach((intento) => {
+        const li = document.createElement("li");
+        li.textContent = `${intento.palabra} ${intento.correcta ? "(+20 puntos)" : ""}`;
+        li.className = intento.correcta ? "correcta" : "incorrecta";
+        historial.appendChild(li);
+      });
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      mensaje.textContent = texto;
+      mensaje.className = "mensaje " + (tipo === "correcto" ? "correcto" : "incorrecto");
+      mensaje.style.display = "block";
+      setTimeout(() => mensaje.style.display = "none", 2000);
+    }
+
+    function mostrarPuntajeFinal() {
+      const totalPuntos = palabrasAdivinadas.length * 20;
+      puntajeDiv.textContent = `🎉 Tu puntaje final es: ${totalPuntos}/100`;
+      puntajeDiv.style.display = "block";
+    }
+
+    formulario.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      if (intentosRealizados.length >= maxIntentos || entrada.disabled) return;
+
+      const valor = entrada.value.trim().toLowerCase();
+      if (!valor) return;
+
+      const esCorrecta = palabrasCorrectas.includes(valor) && !palabrasAdivinadas.includes(valor);
+      const yaSeUsó = palabrasAdivinadas.includes(valor) || intentosRealizados.some(i => i.palabra === valor);
+
+      if (yaSeUsó) {
+        mostrarMensaje("⚠️ Ya ingresaste esta palabra.", "incorrecto");
+        entrada.value = "";
+        return;
+      }
+
+      const nuevoIntento = { palabra: valor, correcta: esCorrecta };
+      intentosRealizados.push(nuevoIntento);
+
+      if (esCorrecta) {
+        palabrasAdivinadas.push(valor);
+        mostrarMensaje("✅ ¡Palabra correcta!", "correcto");
+      } else {
+        mostrarMensaje("❌ Palabra incorrecta.", "incorrecto");
+      }
+
+      actualizarHistorial();
+
+      if (intentosRealizados.length === maxIntentos) {
+        clearInterval(temporizador);
+        entrada.disabled = true;
+        reiniciarBtn.style.display = "block";
+        mostrarPuntajeFinal();
+        mostrarMensaje("🏁 ¡Juego terminado!", "incorrecto");
+      }
+
+      entrada.value = "";
+    });
+
+    // === SOPA DE LETRAS ===
+    const palabrasSopa = ["Gestion", "Nominas", "Administrativo", "Puestos", "Bienestar", "Legal", "Dotacion", "Formacion"];
+    const size = 15;
+    let tablero = Array(size).fill(null).map(() => Array(size).fill(""));
+    let palabrasEncontradas = new Set();
+    let seleccionActual = [];
+
+    function insertarPalabra(palabra, fila, col, horizontal) {
+      for (let i = 0; i < palabra.length; i++) {
+        tablero[fila][col] = palabra[i];
+        horizontal ? col++ : fila++;
+      }
+    }
+
+    function generarTablero() {
+      // Insertar palabras
+      for (const palabra of palabrasSopa) {
+        let colocada = false;
+        while (!colocada) {
+          const horizontal = Math.random() > 0.5;
+          const fila = Math.floor(Math.random() * size);
+          const col = Math.floor(Math.random() * size);
+          if (
+            horizontal && col + palabra.length <= size ||
+            !horizontal && fila + palabra.length <= size
+          ) {
+            insertarPalabra(palabra.toUpperCase(), fila, col, horizontal);
+            colocada = true;
+          }
+        }
+      }
+
+      // Rellenar espacios vacíos
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          if (tablero[i][j] === "") {
+            tablero[i][j] = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+          }
+        }
+      }
+    }
+
+    function dibujarTablero() {
+      const sopa = document.getElementById("sopa");
+      sopa.innerHTML = "";
+      for (let i = 0; i < size; i++) {
+        for (let j = 0; j < size; j++) {
+          const cel = document.createElement("div");
+          cel.classList.add("cel");
+          cel.textContent = tablero[i][j];
+          cel.dataset.fila = i;
+          cel.dataset.col = j;
+          cel.addEventListener("click", seleccionarLetra);
+          sopa.appendChild(cel);
+        }
+      }
+    }
+
+    function seleccionarLetra(e) {
+      const cel = e.target;
+      const fila = parseInt(cel.dataset.fila);
+      const col = parseInt(cel.dataset.col);
+
+      if (seleccionActual.find(p => p.fila === fila && p.col === col)) {
+        seleccionActual = seleccionActual.filter(p => !(p.fila === fila && p.col === col));
+      } else {
+        seleccionActual.push({ fila, col });
+      }
+
+      actualizarSeleccionVisual();
+      verificarSeleccion();
+    }
+
+    function actualizarSeleccionVisual() {
+      document.querySelectorAll(".cel").forEach(c => c.classList.remove("seleccionada"));
+      seleccionActual.forEach(({ fila, col }) => {
+        const cel = document.querySelector(`[data-fila='${fila}'][data-col='${col}']`);
+        if (cel) cel.classList.add("seleccionada");
+      });
+    }
+
+    function verificarSeleccion() {
+      if (seleccionActual.length < 2) return;
+
+      const inicio = seleccionActual[0];
+      const fin = seleccionActual[seleccionActual.length - 1];
+
+      const dirHorizontal = inicio.fila === fin.fila;
+      const dirVertical = inicio.col === fin.col;
+
+      if (!dirHorizontal && !dirVertical) {
+        seleccionActual = [];
+        actualizarSeleccionVisual();
+        return;
+      }
+
+      let palabra = "";
+      if (dirHorizontal) {
+        const fila = inicio.fila;
+        const minCol = Math.min(inicio.col, fin.col);
+        const maxCol = Math.max(inicio.col, fin.col);
+        for (let j = minCol; j <= maxCol; j++) {
+          palabra += tablero[fila][j];
+        }
+      } else {
+        const col = inicio.col;
+        const minFila = Math.min(inicio.fila, fin.fila);
+        const maxFila = Math.max(inicio.fila, fin.fila);
+        for (let i = minFila; i <= maxFila; i++) {
+          palabra += tablero[i][col];
+        }
+      }
+
+      if (palabrasSopa.map(p => p.toUpperCase()).includes(palabra)) {
+        if (!palabrasEncontradas.has(palabra)) {
+          palabrasEncontradas.add(palabra);
+          document.getElementById("encontradas").textContent = `Palabras encontradas: ${palabrasEncontradas.size}/8`;
+          alert("🎉 ¡Encontraste la palabra: " + palabra + "!");
+        }
+      }
+    }
+
+    // Reiniciar
+    reiniciarBtn.addEventListener("click", () => {
+      palabrasAdivinadas = [];
+      intentosRealizados = [];
+      entrada.disabled = false;
+      entrada.value = "";
+      mensaje.style.display = "none";
+      puntajeDiv.style.display = "none";
+      reiniciarBtn.style.display = "none";
+      historial.innerHTML = "";
+      iniciarTemporizador();
+
+      // Resetear sopa
+      palabrasEncontradas.clear();
+      document.getElementById("encontradas").textContent = "Palabras encontradas: 0/8";
+      generarTablero();
+      dibujarTablero();
+    });
+
+    // Inicialización
+    window.onload = () => {
+      iniciarTemporizador();
+      generarTablero();
+      dibujarTablero();
+    };
+  </script>
+</body>
+</html>

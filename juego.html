@@ -128,6 +128,7 @@
     .boton-reiniciar:hover {
       background-color: #1c5980;
     }
+    
   </style>
 </head>
 <body>
@@ -147,13 +148,21 @@
     <ul id="historial"></ul>
 
     <div id="puntajeFinal" class="puntaje-final" style="display: none;"></div>
+    
 
     <a href="index.html" class="boton-reiniciar">Volver a los cuentos</a>
     <br>
-    <h6 style="text-align: left;">psml</h6>
+    <h6 style="text-align: left; ">PMSL: 
+        <br>
+        <div id="contadorRegresosDisplay" class="regreso-cuento" style="font-weight: bold; color: red;"></div>
+    </h6>
   </div>
 
   <script>
+
+    const vecesRegresadas = parseInt(localStorage.getItem("contador_regresos")) || 0;
+    console.log("Veces que ha regresado:", vecesRegresadas);
+
     // Palabras clave
     const palabrasCorrectas = ["integridad", "sinceridad", "veracidad", "rectitud", "honestidad"];
     let palabrasAdivinadas = [];
@@ -185,6 +194,7 @@
         li.style.backgroundColor = "#eee";
         li.style.textAlign = "center";
         historial.appendChild(li);
+     
       }
     }
 
@@ -247,6 +257,7 @@
       mensaje.style.display = "none";
       puntajeFinalDiv.style.display = "none";
       historial.innerHTML = "";
+      regresosCuento.style.display = "none"
     }
 
     // Inicialización
@@ -258,6 +269,27 @@
     document.querySelector(".boton-reiniciar").addEventListener("click", () => {
       reiniciarJuego();
     });
+
+    // Inicializar el contador de regresos desde localStorage
+let contadorRegresos = parseInt(localStorage.getItem("contador_regresos")) || 0;
+
+const contadorRegresosDisplay = document.getElementById("contadorRegresosDisplay");
+contadorRegresosDisplay.textContent = `${contadorRegresos}`;
+
+// Escuchar el evento click en el botón "Volver a los cuentos"
+document.querySelector(".boton-reiniciar").addEventListener("click", () => {
+  contadorRegresos += 1; // Incrementar el contador
+    localStorage.setItem("contador_regresos", contadorRegresos.toString());
+
+  // Mostrar la alerta
+  alert("No estas siendo honrado, pero está bien vuelve a leer el cuento");
+
+  // Redirigir al índice
+  window.location.href = "index.html";
+});
+
+
+
   </script>
 </body>
 </html>

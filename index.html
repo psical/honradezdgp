@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cuento de Honradez</title>
+  <title>Juego DGP</title>
   <style>
     body {
       margin: 0;
@@ -64,6 +64,12 @@
   <!-- PANTALLA DE CUENTO INDIVIDUAL -->
   <div class="seccion">
     <h1>Cuento de Honradez</h1>
+    <h6>Lee detenidamente el cuento para pasar a la siguiente fase</h6>
+
+     <!-- Mensaje de advertencia -->
+    <div id="mensajeAdvertencia" class="mensaje advertencia" style="display: none;">
+      Este cuento ya fue leído. La honradez también es parte del aprendizaje.
+    </div>
 
     <div class="cuento" id="contenedor-cuento">
       <!-- Aquí se carga el cuento aleatorio -->
@@ -73,19 +79,17 @@
   </div>
 
   <script>
+    const KEY_CUENTO_LEIDO = "cuento_leido";
     // === LISTA DE CUENTOS ===
     const cuentos = [
       {
         titulo: " El juicio del rey justo",
-        texto: `En un reino lejano, el rey Rodrigo era conocido por su rectitud. Un día, dos aldeanos llegaron al palacio reclamando la propiedad de una valiosa gema. Ambos juraban que la gema les pertenecía, pero sus argumentos eran contradictorios.
-        <br>
-        <br>
+        texto: `En un reino lejano, el rey Rodrigo era conocido por su rectitud. Un día, dos aldeanos llegaron al palacio reclamando la propiedad de una valiosa gema. 
+        Ambos juraban que la gema les pertenecía, pero sus argumentos eran contradictorios.
         El rey, con su característica integridad, decidió ponerlos a prueba:
-
+        <br>
         <br>– Si esta gema es tan valiosa para ustedes, propongo que la partamos en dos y cada uno se lleve la mitad.
-            <br>
             <br>Uno de los aldeanos aceptó de inmediato, mientras que el otro, con lágrimas en los ojos, exclamó:
-           <br>
            <br>– ¡No lo haga, Majestad! Prefiero perderla antes que verla destruida.
 
            <br> El rey sonrió y dijo:
@@ -126,11 +130,138 @@
         La historia se extendió por el pueblo, y cada vez más personas acudieron a su tienda, sabiendo que podían confiar plenamente en su honestidad.
         `
       },
+      {
+        titulo: "La piedra del sabio",
+        texto: 
+        `
+        En un lejano pueblo, un anciano sabio guardaba una piedra mágica que podía conceder cualquier deseo. Un día, tres jóvenes llegaron hasta él, cada uno con diferentes intenciones.
+        <br>
+        El primero dijo con sinceridad:
+        <br>
+        – Quiero la piedra para ayudar a mi familia a salir de la pobreza.
+        <br>
+        <br>
+        El segundo, aunque trató de engañar al sabio, no pudo mantener su mentira.
+        <br>– Mi intención no es buena. Quiero riqueza para mí solo 
+        <br>–confesó, lleno de vergüenza, demostrando algo de veracidad.
+        <br>
+        El tercero declaró:
+        <br>
+        – No necesito la piedra, sólo quería aprender de usted y entender cómo ha vivido con tanta rectitud y honestidad.
+        <br>
+        El sabio, viendo la integridad del último joven, le dijo:
+        <br>
+        – No necesitas la piedra, ya posees el mayor tesoro: un corazón honesto.
+        `
+      },
+      {
+        titulo: "El pacto de los hermanos",
+        texto: 
+        `
+        Mateo y Diego eran hermanos que trabajaban juntos en la carpintería que habían heredado de su padre. 
+        Una tarde, un comerciante llegó con un pedido urgente: una mesa grande que debía estar lista en dos días. Ofreció pagar el doble si cumplían con el plazo.
+        <br>
+        Mateo, emocionado, aceptó de inmediato, pero Diego dudó:
+        <br>
+        – Si la hacemos rápido, sacrificaremos la calidad. No podemos comprometer nuestra integridad.
+        <br>
+        Mateo insistió en que valía la pena intentarlo, así que trabajaron día y noche. Cuando terminaron, la mesa parecía perfecta, 
+        pero Diego, con su característica veracidad, señaló un defecto en una de las patas.
+        <br>
+        – Debemos decirle la verdad al comerciante –insistió.
+        <br>
+        Mateo se resistía, temiendo perder el pago, pero finalmente accedió. Al entregar la mesa, Diego explicó el defecto con sinceridad y ofreció arreglarla sin costo adicional.
+        El comerciante, impresionado por su honestidad y rectitud, no solo aceptó la mesa, sino que les encargó más trabajos, diciendo:
+        <br>
+        – Prefiero trabajar con personas de valores que con quienes solo buscan enriquecerse.
+        `
+      },
+        {
+        titulo: "El ladrón arrepentido",
+        texto: 
+        `
+        Una noche, mientras la familia de Don Ezequiel dormía, un ladrón entró a la casa. Revisó cada rincón hasta encontrar una pequeña caja llena de monedas de oro. 
+        Cuando estaba a punto de escapar, tropezó con un jarrón, despertando a Don Ezequiel.
+        <br>
+        En lugar de llamar a la policía, Don Ezequiel lo detuvo con calma y le preguntó:
+        <br>
+        – ¿Por qué has entrado a robar?
+        <br>
+        El ladrón, con lágrimas en los ojos, respondió con sinceridad:
+        <br>
+        – Mi familia no tiene qué comer, pero sé que he actuado mal.
+        <br>
+        Don Ezequiel, conmovido por su veracidad, le dijo:
+        <br>
+        – Robar nunca será el camino correcto. Si necesitas ayuda, puedo ofrecerte trabajo. Pero debes prometerme actuar con integridad y rectitud a partir de ahora.
+        <br>
+        El ladrón aceptó, y desde ese día trabajó para Don Ezequiel con honestidad, convirtiéndose en un hombre de bien. 
+        Aunque comenzó con un error, aprendió que la sinceridad y los valores siempre abren mejores caminos.
+        `
+      },
+      {
+        titulo: "El bosque de la integridad",
+        texto: 
+        `
+        En una aldea rodeada de un frondoso bosque, había un árbol sagrado que concedía deseos a quienes demostraran rectitud y honestidad. Un día, tres personas llegaron buscando su ayuda.
+        <br>
+        El primero, un cazador, pidió ser el mejor de la región, pero mintió sobre sus motivos. El árbol no respondió.
+        <br>
+        El segundo, un comerciante, pidió riqueza, pero intentó engañar al árbol ocultando sus verdaderas intenciones. Tampoco recibió respuesta.
+        <br>
+        Finalmente, llegó una joven llamada Clara, quien confesó con sinceridad:
+        <br>
+        – Mi familia está en pobreza. No quiero riqueza para mí, solo comida para mis hermanos.
+        <br>
+        El árbol, impresionado por su veracidad, la ayudó. La aldea entera aprendió que actuar con integridad siempre lleva a mejores resultados.
+        `
+      },
+     {
+        titulo: "La pluma de oro",
+        texto: 
+        `
+        Un joven escritor llamado Miguel vivía en una pequeña cabaña a las afueras de la ciudad. 
+        Aunque sus historias eran maravillosas, apenas podía vender sus libros y a menudo pasaba hambre. Un día, mientras paseaba por el bosque, encontró una pluma de oro puro.
+        <br>
+        Podría haberla vendido y resuelto todos sus problemas, pero decidió usarla para escribir, pensando que algo tan especial debía servir para algo más noble. 
+        Con sinceridad, Miguel escribió una historia sobre la importancia de la honestidad y la rectitud, utilizando la pluma como inspiración.
+        <br>
+        Al poco tiempo, un editor leyó su obra y quedó tan impresionado que decidió publicarla. La historia se convirtió en un éxito, y Miguel fue reconocido no solo por su talento, sino también por su veracidad y sus valores. 
+        Aunque nunca vendió la pluma, ésta se convirtió en su amuleto, recordándole siempre que la integridad es la clave para el verdadero éxito.
+        `
+      },
+      {
+        titulo: "El rey y el campesino",
+        texto: 
+        `
+        Un rey quería saber si su pueblo vivía de acuerdo con los valores de la honestidad y la rectitud, así que se disfrazó de mendigo y recorrió las aldeas. 
+        En su camino, pidió ayuda a varios campesinos, pero muchos lo ignoraron o intentaron aprovecharse de él.
+        <br>
+        Finalmente, llegó a la cabaña de un hombre llamado Pedro, quien lo acogió con sinceridad. Aunque tenía poco, compartió su comida y le ofreció refugio. 
+        El rey, impresionado, le reveló su identidad y le ofreció oro como recompensa.
+        <br>
+        Pedro, con integridad, respondió:
+        <br>
+        – No necesito riquezas. Solo deseo que mi rey gobierne con veracidad y justicia para todos.
+        <br>
+        El rey, conmovido, regresó a su palacio y decretó leyes más justas, inspirado por la honestidad y rectitud de Pedro.
+        `
+      },
     ];
 
     function cargarCuentoAleatorio() {
+        const yaLeido = localStorage.getItem(KEY_CUENTO_LEIDO) === "true";
       const container = document.getElementById("contenedor-cuento");
-      const cuentoAleatorio = cuentos[Math.floor(Math.random() * cuentos.length)];
+      const mensaje = document.getElementById("mensajeAdvertencia");
+
+      if (yaLeido) {
+        mensaje.style.display = "block";
+        container.innerHTML = "";
+        document.getElementById("botonContinuar").style.display = "inline-block";
+        return;
+      }
+
+       const cuentoAleatorio = cuentos[Math.floor(Math.random() * cuentos.length)];
 
       container.innerHTML = `
         <h2>${cuentoAleatorio.titulo}</h2>
